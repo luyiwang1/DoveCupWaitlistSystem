@@ -761,6 +761,7 @@ body.is-admin .capacity-edit.admin-only { display: flex !important; }
 <script>
 const COLORS = ['#07C160','#10AEFF','#FF8C00','#FA5151','#9B59B6','#E67E22','#2ECC71','#E74C3C','#3498DB','#1ABC9C'];
 const ADMIN_PASSWORD = '8888';
+const WAITLIST_CAPACITY = 24;
 const DATA_STORAGE = 'signup_v3';
 const DB_PATH = 'doveCupWaitlistSystem/main';
 const FIREBASE_CONFIG = {
@@ -956,7 +957,7 @@ function renderStats() {
   document.getElementById('statWait').textContent = state.waitlist.length;
   document.getElementById('statPaid').textContent = state.joined.filter(p=>p.paid).length;
   document.getElementById('cnt-joined').textContent = state.joined.length;
-  document.getElementById('cnt-waitlist').textContent = state.waitlist.length;
+  document.getElementById('cnt-waitlist').textContent = `${state.waitlist.length}/${WAITLIST_CAPACITY}`;
 
   // Bar
   document.getElementById('barFilled').textContent = state.joined.length;
@@ -980,11 +981,11 @@ function renderWaitlist() {
   const slots = state.capacity ? Math.max(0, state.capacity - state.joined.length) : null;
 
   if (!state.waitlist.length) {
-    el.innerHTML = `<div class="waitlist-empty"><div class="icon">⏳</div><p>Waitlist 暂时为空<br>有人取消时会自动补位</p></div>`;
+    el.innerHTML = `<div class="waitlist-empty"><div class="icon">⏳</div><p>Waitlist 暂时为空<br>最多 ${WAITLIST_CAPACITY} 人，有人取消时会自动补位</p></div>`;
     return;
   }
 
-  let html = `<div class="section-label">等待补位 · ${state.waitlist.length} 人</div>`;
+  let html = `<div class="section-label">等待补位 · ${state.waitlist.length} / ${WAITLIST_CAPACITY} 人</div>`;
 
   if (isAdminMode && slots && slots > 0) {
     html += `<button class="promote-all-btn" onclick="promoteAll()">🎉 有 ${slots} 个空位！一键补位前 ${Math.min(slots, state.waitlist.length)} 人</button>`;
@@ -1305,8 +1306,17 @@ function addPerson(list) {
   if (!name) { showToast('请输入姓名'); return; }
 
   if (list === 'joined' && state.capacity && state.joined.length >= state.capacity) {
+    if (state.waitlist.length >= WAITLIST_CAPACITY) {
+      showToast(`名额已满，Waitlist 也已满（最多 ${WAITLIST_CAPACITY} 人）`);
+      return;
+    }
     showToast('名额已满，已加入 Waitlist');
     list = 'waitlist';
+  }
+
+  if (list === 'waitlist' && state.waitlist.length >= WAITLIST_CAPACITY) {
+    showToast(`Waitlist 已满（最多 ${WAITLIST_CAPACITY} 人）`);
+    return;
   }
 
   rememberUser(name);
@@ -1408,6 +1418,11 @@ function setCapacity() {
   if (state.joined.length > val) {
     const overflow = state.joined.splice(val);
     moved = overflow.length;
+    if (state.waitlist.length + moved > WAITLIST_CAPACITY) {
+      state.joined = state.joined.concat(overflow);
+      showToast(`设置后 Waitlist 会超过 ${WAITLIST_CAPACITY} 人，请先移除部分 Waitlist`);
+      return;
+    }
     state.waitlist = overflow.map(p => ({
       id: p.id,
       name: p.name,
