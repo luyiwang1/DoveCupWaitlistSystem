@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>活动接龙</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --green: #07C160;
+  --green-light: #E8F9EF;
+  --green-dark: #059A4A;
+  --orange: #FF8C00;
+  --orange-light: #FFF3E0;
+  --red: #FA5151;
+  --red-light: #FFF0F0;
+  --blue: #10AEFF;
+  --blue-light: #EBF8FF;
+  --gray-100: #F7F7F7;
+  --gray-200: #EFEFEF;
+  --gray-300: #DCDCDC;
+  --gray-500: #999;
+  --gray-700: #555;
+  --ink: #1A1A1A;
+  --white: #FFFFFF;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --shadow: 0 2px 12px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.14);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; }
+body {
+  font-family: 'Noto Sans SC', -apple-system, sans-serif;
+  background: var(--gray-100);
+  color: var(--ink);
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Header ── */
+.app-header {
+  background: var(--white);
+  padding: 16px 16px 0;
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  box-shadow: 0 1px 0 var(--gray-200);
+}
+.header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.event-title {
+  font-size: 18px;
+  font-weight: 700;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-right: 8px;
+}
+.edit-title-btn {
+  background: none;
+  border: none;
+  color: var(--green);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+}
+.stats-row {
+  display: flex;
+  gap: 8px;
+  padding-bottom: 12px;
+}
+.stat-chip {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--gray-100);
+  border-radius: 20px;
+  padding: 5px 12px;
+  font-size: 12px;
+  color: var(--gray-700);
+}
+.stat-chip .dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+}
+.stat-chip .dot.green { background: var(--green); }
+.stat-chip .dot.orange { background: var(--orange); }
+.stat-chip .dot.gray { background: var(--gray-300); }
+.stat-chip strong { font-weight: 700; color: var(--ink); }
+
+/* ── Tabs ── */
+.tabs {
+  display: flex;
+  background: var(--white);
+  border-bottom: 1px solid var(--gray-200);
+  position: sticky;
+  top: 101px;
+  z-index: 150;
+}
+.tab-btn {
+  flex: 1;
+  background: none;
+  border: none;
+  padding: 11px 0;
+  font-size: 14px;
+  font-family: 'Noto Sans SC', sans-serif;
+  color: var(--gray-500);
+  cursor: pointer;
+  position: relative;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+.tab-btn.active { color: var(--green); font-weight: 700; }
+.tab-btn.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 20%; right: 20%;
+  height: 2.5px;
+  background: var(--green);
+  border-radius: 2px;
+}
+.tab-count {
+  display: inline-block;
+  background: var(--gray-200);
+  border-radius: 10px;
+  padding: 1px 6px;
+  font-size: 11px;
+  margin-left: 3px;
+}
+.tab-btn.active .tab-count { background: var(--green-light); color: var(--green-dark); }
+
+/* ── Content ── */
+.content { flex: 1; padding: 12px; }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ── Capacity bar ── */
+.capacity-bar-wrap {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow);
+}
+.capacity-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.capacity-label { font-size: 13px; color: var(--gray-700); }
+.capacity-nums { font-size: 13px; font-weight: 700; }
+.capacity-nums span { color: var(--green); }
+.bar-track {
+  height: 6px;
+  background: var(--gray-200);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--green), #00DA6C);
+  border-radius: 3px;
+  transition: width 0.5s cubic-bezier(0.34,1.3,0.64,1);
+}
+.capacity-edit {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  border-top: 1px solid var(--gray-200);
+  padding-top: 10px;
+}
+.capacity-edit label { font-size: 12px; color: var(--gray-500); flex: 1; }
+.capacity-edit input {
+  width: 64px;
+  border: 1.5px solid var(--gray-300);
+  border-radius: var(--radius-sm);
+  padding: 5px 8px;
+  font-size: 14px;
+  font-family: inherit;
+  text-align: center;
+  outline: none;
+}
+.capacity-edit input:focus { border-color: var(--green); }
+.set-btn {
+  background: var(--green);
+  color: white;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 6px 14px;
+  font-size: 13px;
+  font-family: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* ── Person cards ── */
+.section-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--gray-500);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin: 14px 0 8px 2px;
+}
+.person-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  box-shadow: var(--shadow);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: transform 0.15s, opacity 0.15s;
+  position: relative;
+  overflow: hidden;
+}
+.person-card.promoting {
+  animation: promoteIn 0.5s cubic-bezier(0.34,1.4,0.64,1);
+}
+@keyframes promoteIn {
+  from { transform: scale(0.92) translateY(8px); opacity: 0; background: var(--green-light); }
+  to   { transform: scale(1) translateY(0); opacity: 1; }
+}
+.person-card.removing {
+  animation: removeOut 0.3s ease forwards;
+}
+@keyframes removeOut {
+  to { transform: translateX(60px); opacity: 0; max-height: 0; margin: 0; padding: 0; }
+}
+.rank-num {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--gray-500);
+  min-width: 22px;
+  text-align: center;
+}
+.rank-num.top { color: var(--green); }
+.avatar {
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  font-weight: 700;
+  flex-shrink: 0;
+  color: white;
+}
+.person-info { flex: 1; min-width: 0; }
+.person-name {
+  font-size: 15px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.person-meta { font-size: 12px; color: var(--gray-500); margin-top: 2px; }
+
+/* ── Status badges ── */
+.badges {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-shrink: 0;
+}
+.badge {
+  border-radius: 20px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1.5px solid transparent;
+  transition: all 0.15s;
+  white-space: nowrap;
+  user-select: none;
+}
+.badge:active { transform: scale(0.93); }
+
+.badge-confirm {
+  background: var(--green-light);
+  color: var(--green-dark);
+  border-color: var(--green-light);
+}
+.badge-confirm.off {
+  background: var(--gray-100);
+  color: var(--gray-500);
+  border-color: var(--gray-300);
+}
+.badge-paid {
+  background: var(--blue-light);
+  color: var(--blue);
+  border-color: var(--blue-light);
+}
+.badge-paid.off {
+  background: var(--gray-100);
+  color: var(--gray-500);
+  border-color: var(--gray-300);
+}
+.badge-cancel {
+  background: var(--red-light);
+  color: var(--red);
+  border-color: var(--red-light);
+}
+.badge-wait-promote {
+  background: var(--orange-light);
+  color: var(--orange);
+  border-color: var(--orange-light);
+}
+
+/* ── Delete swipe area ── */
+.delete-zone {
+  position: absolute;
+  right: 0; top: 0; bottom: 0;
+  width: 70px;
+  background: var(--red);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 13px;
+  font-weight: 700;
+  transform: translateX(100%);
+  transition: transform 0.25s;
+  cursor: pointer;
+  border-radius: 0 var(--radius) var(--radius) 0;
+}
+.person-card.swiped .delete-zone { transform: translateX(0); }
+
+/* ── Add person form ── */
+.add-form {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 14px;
+  margin-top: 14px;
+  box-shadow: var(--shadow);
+}
+.add-form-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--gray-700);
+  margin-bottom: 10px;
+}
+.form-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.form-input {
+  flex: 1;
+  border: 1.5px solid var(--gray-300);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  color: var(--ink);
+  background: var(--gray-100);
+  transition: border-color 0.2s, background 0.2s;
+}
+.form-input:focus {
+  border-color: var(--green);
+  background: white;
+}
+.form-input::placeholder { color: var(--gray-300); }
+.add-to-list-btn {
+  padding: 10px 16px;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-family: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.add-to-list-btn:active { transform: scale(0.96); }
+.btn-main { background: var(--green); color: white; }
+.btn-wait { background: var(--orange-light); color: var(--orange); border: 1.5px solid var(--orange); }
+
+/* ── Waitlist ── */
+.waitlist-empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--gray-500);
+}
+.waitlist-empty .icon { font-size: 42px; margin-bottom: 10px; }
+.waitlist-empty p { font-size: 14px; line-height: 1.8; }
+
+.promote-all-btn {
+  width: 100%;
+  background: var(--green);
+  color: white;
+  border: none;
+  border-radius: var(--radius);
+  padding: 13px;
+  font-size: 15px;
+  font-family: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 10px;
+  box-shadow: 0 4px 14px rgba(7,193,96,0.35);
+  transition: all 0.15s;
+}
+.promote-all-btn:active { transform: scale(0.97); }
+
+/* ── Summary tab ── */
+.summary-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 10px;
+  box-shadow: var(--shadow);
+}
+.summary-card h3 {
+  font-size: 14px;
+  color: var(--gray-700);
+  margin-bottom: 12px;
+  font-weight: 700;
+}
+.summary-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.summary-item {
+  background: var(--gray-100);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  text-align: center;
+}
+.summary-item .s-num {
+  font-size: 28px;
+  font-weight: 900;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.summary-item .s-label { font-size: 12px; color: var(--gray-500); }
+.s-green { color: var(--green); }
+.s-blue { color: var(--blue); }
+.s-red { color: var(--red); }
+.s-orange { color: var(--orange); }
+
+.copy-btn {
+  width: 100%;
+  background: var(--green-light);
+  color: var(--green-dark);
+  border: 1.5px solid var(--green);
+  border-radius: var(--radius);
+  padding: 13px;
+  font-size: 14px;
+  font-family: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 4px;
+  transition: all 0.15s;
+}
+.copy-btn:active { transform: scale(0.97); }
+
+.unpaid-list { margin-top: 10px; }
+.unpaid-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--gray-200);
+  font-size: 14px;
+}
+.unpaid-row:last-child { border-bottom: none; }
+.unpaid-name { font-weight: 600; }
+.unpaid-tag {
+  font-size: 11px;
+  background: var(--orange-light);
+  color: var(--orange);
+  border-radius: 10px;
+  padding: 2px 8px;
+  font-weight: 700;
+}
+
+/* ── Toast ── */
+#toast {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: rgba(26,26,26,0.9);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 24px;
+  font-size: 13px;
+  font-weight: 500;
+  opacity: 0;
+  transition: all 0.28s;
+  z-index: 9999;
+  white-space: nowrap;
+  pointer-events: none;
+  backdrop-filter: blur(8px);
+}
+#toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+#toast.green { background: rgba(7,193,96,0.92); }
+
+/* ── Modal ── */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 500;
+  align-items: flex-end;
+  justify-content: center;
+}
+.modal-overlay.open { display: flex; animation: fadein 0.2s; }
+@keyframes fadein { from { opacity: 0; } to { opacity: 1; } }
+.modal-sheet {
+  background: white;
+  border-radius: 18px 18px 0 0;
+  padding: 20px 20px 32px;
+  width: 100%;
+  max-width: 480px;
+  animation: slideup 0.28s cubic-bezier(0.34,1.2,0.64,1);
+}
+@keyframes slideup {
+  from { transform: translateY(80px); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+.modal-handle {
+  width: 36px; height: 4px;
+  background: var(--gray-300);
+  border-radius: 2px;
+  margin: 0 auto 16px;
+}
+.modal-title { font-size: 17px; font-weight: 700; margin-bottom: 14px; }
+.modal-input {
+  width: 100%;
+  border: 1.5px solid var(--gray-300);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  font-size: 16px;
+  font-family: inherit;
+  outline: none;
+  margin-bottom: 14px;
+}
+.modal-input:focus { border-color: var(--green); }
+.modal-btns { display: flex; gap: 10px; }
+.modal-btn {
+  flex: 1;
+  padding: 13px;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  font-family: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.modal-btn.cancel { background: var(--gray-100); color: var(--gray-700); }
+.modal-btn.confirm { background: var(--green); color: white; }
+
+/* ── Floating add btn ── */
+.fab {
+  position: fixed;
+  bottom: 24px;
+  right: 20px;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--green);
+  color: white;
+  font-size: 26px;
+  border: none;
+  box-shadow: 0 4px 18px rgba(7,193,96,0.5);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  transition: transform 0.15s, box-shadow 0.15s;
+  line-height: 1;
+}
+.fab:active { transform: scale(0.9); box-shadow: 0 2px 10px rgba(7,193,96,0.3); }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="app-header">
+  <div class="header-top">
+    <div class="event-title" id="eventTitle">🎉 活动接龙</div>
+    <button class="edit-title-btn" onclick="editTitle()">✏️ 改名</button>
+  </div>
+  <div class="stats-row">
+    <div class="stat-chip">
+      <div class="dot green"></div>
+      名额 <strong><span id="statCap">—</span></strong>
+    </div>
+    <div class="stat-chip">
+      <div class="dot green"></div>
+      已报名 <strong id="statJoined">0</strong>
+    </div>
+    <div class="stat-chip">
+      <div class="dot orange"></div>
+      Waitlist <strong id="statWait">0</strong>
+    </div>
+    <div class="stat-chip">
+      <div class="dot gray"></div>
+      已付 <strong id="statPaid">0</strong>
+    </div>
+  </div>
+</div>
+
+<!-- Tabs -->
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('joined')" id="tab-joined">
+    报名 <span class="tab-count" id="cnt-joined">0</span>
+  </button>
+  <button class="tab-btn" onclick="switchTab('waitlist')" id="tab-waitlist">
+    Waitlist <span class="tab-count" id="cnt-waitlist">0</span>
+  </button>
+  <button class="tab-btn" onclick="switchTab('summary')" id="tab-summary">
+    汇总
+  </button>
+</div>
+
+<!-- Content -->
+<div class="content">
+
+  <!-- Joined tab -->
+  <div class="tab-panel active" id="panel-joined">
+    <div class="capacity-bar-wrap">
+      <div class="capacity-header">
+        <span class="capacity-label">名额占用</span>
+        <span class="capacity-nums"><span id="barFilled">0</span> / <span id="barTotal">—</span></span>
+      </div>
+      <div class="bar-track"><div class="bar-fill" id="barFill" style="width:0%"></div></div>
+      <div class="capacity-edit">
+        <label>总名额上限</label>
+        <input type="number" id="capInput" placeholder="25" min="1" max="999">
+        <button class="set-btn" onclick="setCapacity()">设置</button>
+      </div>
+    </div>
+    <div class="section-label">报名列表</div>
+    <div id="joinedList"></div>
+  </div>
+
+  <!-- Waitlist tab -->
+  <div class="tab-panel" id="panel-waitlist">
+    <div id="waitlistContent"></div>
+  </div>
+
+  <!-- Summary tab -->
+  <div class="tab-panel" id="panel-summary">
+    <div class="summary-card">
+      <h3>📊 报名概况</h3>
+      <div class="summary-grid">
+        <div class="summary-item">
+          <div class="s-num s-green" id="sum-joined">0</div>
+          <div class="s-label">已报名</div>
+        </div>
+        <div class="summary-item">
+          <div class="s-num s-orange" id="sum-wait">0</div>
+          <div class="s-label">Waitlist</div>
+        </div>
+        <div class="summary-item">
+          <div class="s-num s-blue" id="sum-paid">0</div>
+          <div class="s-label">已付款</div>
+        </div>
+        <div class="summary-item">
+          <div class="s-num s-red" id="sum-unpaid">0</div>
+          <div class="s-label">未付款</div>
+        </div>
+      </div>
+    </div>
+    <div class="summary-card" id="unpaidSection" style="display:none">
+      <h3>⏳ 未付款名单</h3>
+      <div class="unpaid-list" id="unpaidList"></div>
+    </div>
+    <button class="copy-btn" onclick="copyList()">📋 复制接龙文本</button>
+  </div>
+
+</div>
+
+<!-- FAB -->
+<button class="fab" onclick="showAddModal()" aria-label="添加人员">＋</button>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<!-- Add modal -->
+<div class="modal-overlay" id="addModal" onclick="closeModal(event,'addModal')">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">➕ 添加人员</div>
+    <input class="modal-input" id="addName" placeholder="姓名 / 微信名" autocomplete="off">
+    <div class="modal-btns">
+      <button class="modal-btn cancel" onclick="closeModalById('addModal')">取消</button>
+      <button class="modal-btn confirm" style="background:var(--orange);color:white" onclick="addPerson('waitlist')">加 Waitlist</button>
+      <button class="modal-btn confirm" onclick="addPerson('joined')">直接报名</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit title modal -->
+<div class="modal-overlay" id="titleModal" onclick="closeModal(event,'titleModal')">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">✏️ 修改活动名称</div>
+    <input class="modal-input" id="titleInput" placeholder="例：5月羽毛球活动" autocomplete="off">
+    <div class="modal-btns">
+      <button class="modal-btn cancel" onclick="closeModalById('titleModal')">取消</button>
+      <button class="modal-btn confirm" onclick="saveTitle()">保存</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const COLORS = ['#07C160','#10AEFF','#FF8C00','#FA5151','#9B59B6','#E67E22','#2ECC71','#E74C3C','#3498DB','#1ABC9C'];
+
+let state = {
+  title: '🎉 活动接龙',
+  capacity: null,
+  joined: [],   // {id, name, confirmed, paid, ts}
+  waitlist: []  // {id, name, ts}
+};
+
+let idSeq = 1;
+function newId() { return idSeq++; }
+function avatarColor(name) {
+  let h = 0;
+  for (let c of name) h = ((h << 5) - h) + c.charCodeAt(0);
+  return COLORS[Math.abs(h) % COLORS.length];
+}
+function initials(name) {
+  const trimmed = name.trim();
+  // Handle emoji-containing names
+  const clean = trimmed.replace(/[\u{1F000}-\u{1FFFF}]/gu, '').trim();
+  if (!clean) return trimmed[0] || '?';
+  // Chinese: first char; Latin: first letters of up to 2 words
+  if (/[\u4e00-\u9fff]/.test(clean[0])) return clean[0];
+  const parts = clean.split(/\s+/);
+  return (parts[0][0] + (parts[1] ? parts[1][0] : '')).toUpperCase();
+}
+
+function save() {
+  try { sessionStorage.setItem('signup_v2', JSON.stringify({state, idSeq})); } catch(e){}
+}
+function load() {
+  try {
+    const raw = sessionStorage.getItem('signup_v2');
+    if (!raw) return;
+    const d = JSON.parse(raw);
+    state = d.state;
+    idSeq = d.idSeq || 100;
+  } catch(e){}
+}
+
+// ── Render ──
+function render() {
+  renderJoined();
+  renderWaitlist();
+  renderSummary();
+  renderStats();
+  save();
+}
+
+function renderStats() {
+  document.getElementById('eventTitle').textContent = state.title;
+  const cap = state.capacity;
+  document.getElementById('statCap').textContent = cap ?? '不限';
+  document.getElementById('statJoined').textContent = state.joined.length;
+  document.getElementById('statWait').textContent = state.waitlist.length;
+  document.getElementById('statPaid').textContent = state.joined.filter(p=>p.paid).length;
+  document.getElementById('cnt-joined').textContent = state.joined.length;
+  document.getElementById('cnt-waitlist').textContent = state.waitlist.length;
+
+  // Bar
+  document.getElementById('barFilled').textContent = state.joined.length;
+  document.getElementById('barTotal').textContent = cap ?? '∞';
+  const pct = cap ? Math.min(100, state.joined.length / cap * 100) : 0;
+  document.getElementById('barFill').style.width = pct + '%';
+  if (cap) document.getElementById('capInput').value = cap;
+}
+
+function renderJoined() {
+  const el = document.getElementById('joinedList');
+  if (!state.joined.length) {
+    el.innerHTML = `<div class="waitlist-empty"><div class="icon">📋</div><p>还没有人报名<br>点击右下角 + 添加</p></div>`;
+    return;
+  }
+  el.innerHTML = state.joined.map((p, i) => personCard(p, i+1, 'joined')).join('');
+}
+
+function renderWaitlist() {
+  const el = document.getElementById('waitlistContent');
+  const slots = state.capacity ? Math.max(0, state.capacity - state.joined.length) : null;
+
+  if (!state.waitlist.length) {
+    el.innerHTML = `<div class="waitlist-empty"><div class="icon">⏳</div><p>Waitlist 暂时为空<br>有人取消时会自动补位</p></div>`;
+    return;
+  }
+
+  let html = `<div class="section-label">等待补位 · ${state.waitlist.length} 人</div>`;
+
+  if (slots && slots > 0) {
+    html += `<button class="promote-all-btn" onclick="promoteAll()">🎉 有 ${slots} 个空位！一键补位前 ${Math.min(slots, state.waitlist.length)} 人</button>`;
+  }
+
+  html += state.waitlist.map((p, i) => personCard(p, i+1, 'waitlist')).join('');
+  el.innerHTML = html;
+}
+
+function renderSummary() {
+  const joined = state.joined.length;
+  const wait = state.waitlist.length;
+  const paid = state.joined.filter(p=>p.paid).length;
+  const unpaid = joined - paid;
+  document.getElementById('sum-joined').textContent = joined;
+  document.getElementById('sum-wait').textContent = wait;
+  document.getElementById('sum-paid').textContent = paid;
+  document.getElementById('sum-unpaid').textContent = unpaid;
+
+  const unpaidPeople = state.joined.filter(p=>!p.paid);
+  const sec = document.getElementById('unpaidSection');
+  if (unpaidPeople.length) {
+    sec.style.display = '';
+    document.getElementById('unpaidList').innerHTML = unpaidPeople.map(p =>
+      `<div class="unpaid-row">
+        <span class="unpaid-name">${p.name}</span>
+        <span class="unpaid-tag">未付款</span>
+      </div>`
+    ).join('');
+  } else {
+    sec.style.display = 'none';
+  }
+}
+
+function personCard(p, rank, list) {
+  const av = avatarColor(p.name);
+  const init = initials(p.name);
+  const isJoined = list === 'joined';
+  const badges = isJoined ? `
+    <div class="badges">
+      <span class="badge badge-confirm ${p.confirmed ? '' : 'off'}" onclick="toggleConfirm(${p.id})">${p.confirmed ? '✅ 已确认' : '❓ 待确认'}</span>
+      <span class="badge badge-paid ${p.paid ? '' : 'off'}" onclick="togglePaid(${p.id})">${p.paid ? '💰 已付' : '💸 未付'}</span>
+    </div>
+  ` : `
+    <div class="badges">
+      <span class="badge badge-wait-promote" onclick="promoteOne(${p.id})">↑ 补位</span>
+      <span class="badge badge-cancel" onclick="removeFromWaitlist(${p.id})">✕</span>
+    </div>
+  `;
+
+  return `
+  <div class="person-card" id="card-${p.id}" ontouchstart="" >
+    <span class="rank-num ${rank <= 3 ? 'top' : ''}">${rank}</span>
+    <div class="avatar" style="background:${av}">${init}</div>
+    <div class="person-info">
+      <div class="person-name">${p.name}</div>
+      ${isJoined ? '' : `<div class="person-meta">排队中</div>`}
+    </div>
+    ${badges}
+    ${isJoined ? `<div class="delete-zone" onclick="removeJoined(${p.id})">退出</div>` : ''}
+  </div>`;
+}
+
+// ── Actions ──
+function addPerson(list) {
+  const name = document.getElementById('addName').value.trim();
+  if (!name) { showToast('请输入姓名'); return; }
+
+  if (list === 'joined') {
+    // check capacity
+    if (state.capacity && state.joined.length >= state.capacity) {
+      showToast(`名额已满！自动加入 Waitlist`);
+      list = 'waitlist';
+    }
+  }
+
+  const person = { id: newId(), name, confirmed: false, paid: false, ts: Date.now() };
+  if (list === 'joined') {
+    state.joined.push(person);
+    showToast(`✅ ${name} 已报名！`, 'green');
+  } else {
+    state.waitlist.push({ id: person.id, name, ts: person.ts });
+    showToast(`⏳ ${name} 已加入 Waitlist`);
+  }
+
+  closeModalById('addModal');
+  document.getElementById('addName').value = '';
+  render();
+  // switch to right tab
+  switchTab(list === 'joined' ? 'joined' : 'waitlist');
+}
+
+function toggleConfirm(id) {
+  const p = state.joined.find(x=>x.id===id);
+  if (!p) return;
+  p.confirmed = !p.confirmed;
+  showToast(p.confirmed ? `${p.name} 已确认参加` : `${p.name} 取消确认`, p.confirmed ? 'green' : '');
+  render();
+}
+
+function togglePaid(id) {
+  const p = state.joined.find(x=>x.id===id);
+  if (!p) return;
+  p.paid = !p.paid;
+  showToast(p.paid ? `${p.name} 已付款 💰` : `${p.name} 标记未付款`, p.paid ? 'green' : '');
+  render();
+}
+
+function removeJoined(id) {
+  const idx = state.joined.findIndex(x=>x.id===id);
+  if (idx === -1) return;
+  const name = state.joined[idx].name;
+  const card = document.getElementById('card-'+id);
+  if (card) {
+    card.classList.add('removing');
+    setTimeout(() => {
+      state.joined.splice(idx, 1);
+      autoPromote();
+      render();
+    }, 280);
+  } else {
+    state.joined.splice(idx, 1);
+    autoPromote();
+    render();
+  }
+  showToast(`${name} 已退出`);
+}
+
+function removeFromWaitlist(id) {
+  const idx = state.waitlist.findIndex(x=>x.id===id);
+  if (idx === -1) return;
+  const name = state.waitlist[idx].name;
+  state.waitlist.splice(idx, 1);
+  showToast(`${name} 已从 Waitlist 移除`);
+  render();
+}
+
+function promoteOne(id) {
+  if (state.capacity && state.joined.length >= state.capacity) {
+    showToast('名额已满，无法补位');
+    return;
+  }
+  const idx = state.waitlist.findIndex(x=>x.id===id);
+  if (idx === -1) return;
+  const w = state.waitlist[idx];
+  state.waitlist.splice(idx, 1);
+  state.joined.push({ id: w.id, name: w.name, confirmed: false, paid: false, ts: Date.now() });
+  showToast(`🎉 ${w.name} 已补位成功！`, 'green');
+  render();
+  // Animate the new card
+  setTimeout(() => {
+    const card = document.getElementById('card-'+w.id);
+    if (card) card.classList.add('promoting');
+  }, 50);
+  switchTab('joined');
+}
+
+function promoteAll() {
+  if (!state.capacity) return;
+  const slots = state.capacity - state.joined.length;
+  if (slots <= 0) { showToast('名额已满'); return; }
+  const toPromote = state.waitlist.splice(0, slots);
+  toPromote.forEach(w => {
+    state.joined.push({ id: w.id, name: w.name, confirmed: false, paid: false, ts: Date.now() });
+  });
+  showToast(`🎉 ${toPromote.length} 人已成功补位！`, 'green');
+  render();
+  switchTab('joined');
+}
+
+function autoPromote() {
+  if (!state.capacity || state.waitlist.length === 0) return;
+  if (state.joined.length < state.capacity) {
+    const w = state.waitlist.shift();
+    state.joined.push({ id: w.id, name: w.name, confirmed: false, paid: false, ts: Date.now() });
+    showToast(`🎉 ${w.name} 自动补位成功！`, 'green');
+    setTimeout(() => {
+      const card = document.getElementById('card-'+w.id);
+      if (card) card.classList.add('promoting');
+    }, 100);
+  }
+}
+
+function setCapacity() {
+  const val = parseInt(document.getElementById('capInput').value);
+  if (isNaN(val) || val < 1) { showToast('请输入有效名额'); return; }
+  state.capacity = val;
+  showToast(`名额上限设为 ${val} 人`, 'green');
+  render();
+}
+
+function copyList() {
+  const title = state.title;
+  const cap = state.capacity ? `（名额 ${state.joined.length}/${state.capacity}）` : `（共 ${state.joined.length} 人）`;
+  let text = `${title} ${cap}\n\n`;
+  text += `📋 报名名单：\n`;
+  state.joined.forEach((p, i) => {
+    const confirm = p.confirmed ? '✅' : '❓';
+    const paid = p.paid ? '💰' : '  ';
+    text += `${i+1}. ${p.name} ${confirm}${paid}\n`;
+  });
+  if (state.waitlist.length) {
+    text += `\n⏳ Waitlist：\n`;
+    state.waitlist.forEach((p, i) => {
+      text += `${i+1}. ${p.name}\n`;
+    });
+  }
+  text += `\n✅=已确认  💰=已付款`;
+
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(() => showToast('📋 已复制到剪贴板！', 'green'));
+  } else {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('📋 已复制到剪贴板！', 'green');
+  }
+}
+
+// ── UI helpers ──
+function switchTab(name) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  document.getElementById('panel-'+name).classList.add('active');
+}
+
+function showAddModal() {
+  document.getElementById('addModal').classList.add('open');
+  setTimeout(() => document.getElementById('addName').focus(), 200);
+}
+function editTitle() {
+  document.getElementById('titleInput').value = state.title;
+  document.getElementById('titleModal').classList.add('open');
+  setTimeout(() => document.getElementById('titleInput').focus(), 200);
+}
+function saveTitle() {
+  const v = document.getElementById('titleInput').value.trim();
+  if (!v) return;
+  state.title = v;
+  closeModalById('titleModal');
+  render();
+}
+function closeModal(e, id) {
+  if (e.target === document.getElementById(id)) closeModalById(id);
+}
+function closeModalById(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+let toastTimer;
+function showToast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = type === 'green' ? 'show green' : 'show';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { t.className = ''; }, 2200);
+}
+
+// Enter key support
+document.getElementById('addName').addEventListener('keydown', e => {
+  if (e.key === 'Enter') addPerson('joined');
+});
+document.getElementById('titleInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') saveTitle();
+});
+document.getElementById('capInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') setCapacity();
+});
+
+// Init with sample data from the screenshot
+function initSampleData() {
+  const names = [
+    'Chris H','塔塔','Xavier','Andy','杨令','Alvin','老五','Melody🎶',
+    'young','bill','Rooney','GILL','Joyce','Joey','rachael','Harry Lyu',
+    'Steven','小梁','李子健 Jack','S','paul','Zack','JJ','B','RXH'
+  ];
+  state.capacity = 25;
+  state.joined = names.slice(0, 22).map((name, i) => ({
+    id: newId(),
+    name,
+    confirmed: Math.random() > 0.35,
+    paid: Math.random() > 0.45,
+    ts: Date.now() - (25 - i) * 60000
+  }));
+  state.waitlist = names.slice(22).map(name => ({
+    id: newId(),
+    name,
+    ts: Date.now()
+  }));
+}
+
+load();
+if (!state.joined.length && !state.waitlist.length) {
+  initSampleData();
+}
+render();
+</script>
+</body>
+</html>
