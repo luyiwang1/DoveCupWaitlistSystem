@@ -1192,6 +1192,7 @@ function personCard(p, rank, list) {
     <div class="badges">
       <span class="badge badge-confirm ${p.confirmed ? '' : 'off'}${lockClass}" ${canEdit ? `onclick="toggleConfirm(${p.id})"` : ''}>${p.confirmed ? '已确认' : '待确认'}</span>
       <span class="badge badge-paid ${p.paid ? '' : 'off'}${lockClass}" ${canEdit ? `onclick="togglePaid(${p.id})"` : ''}>${p.paid ? '已付款' : '未付款'}</span>
+      ${canEdit ? `<span class="badge badge-cancel" onclick="removeJoined(${p.id})">退出</span>` : ''}
     </div>
   ` : `
     <div class="badges">
@@ -1210,7 +1211,6 @@ function personCard(p, rank, list) {
       ${isJoined ? '' : `<div class="person-meta">排队中</div>`}
     </div>
     ${badges}
-    ${isJoined && canEdit ? `<div class="delete-zone" onclick="removeJoined(${p.id})">退出</div>` : ''}
   </div>`;
 }
 
@@ -1318,7 +1318,18 @@ function setCapacity() {
   const val = parseInt(document.getElementById('capInput').value);
   if (isNaN(val) || val < 1) { showToast('请输入有效名额'); return; }
   state.capacity = val;
-  showToast(`名额上限设置为 ${val} 人`, 'green');
+  let moved = 0;
+  if (state.joined.length > val) {
+    const overflow = state.joined.splice(val);
+    moved = overflow.length;
+    state.waitlist = overflow.map(p => ({
+      id: p.id,
+      name: p.name,
+      ownerKey: p.ownerKey,
+      ts: Date.now()
+    })).concat(state.waitlist);
+  }
+  showToast(moved ? `名额已设为 ${val} 人，${moved} 人已转入 Waitlist` : `名额上限设置为 ${val} 人`, 'green');
   render();
 }
 
