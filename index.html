@@ -759,6 +759,7 @@ body.is-admin .capacity-edit.admin-only { display: flex !important; }
 <script>
 const COLORS = ['#07C160','#10AEFF','#FF8C00','#FA5151','#9B59B6','#E67E22','#2ECC71','#E74C3C','#3498DB','#1ABC9C'];
 const ADMIN_PASSWORD = 'DoveCup2026!';
+const DATA_STORAGE = 'signup_v3';
 const USER_KEY_STORAGE = 'signup_user_key';
 const USER_NAME_STORAGE = 'signup_user_name';
 const ADMIN_STORAGE = 'signup_is_admin';
@@ -831,11 +832,11 @@ function initials(name) {
 }
 
 function save() {
-  try { sessionStorage.setItem('signup_v2', JSON.stringify({state, idSeq})); } catch(e){}
+  try { sessionStorage.setItem(DATA_STORAGE, JSON.stringify({state, idSeq})); } catch(e){}
 }
 function load() {
   try {
-    const raw = sessionStorage.getItem('signup_v2');
+    const raw = sessionStorage.getItem(DATA_STORAGE);
     if (!raw) return;
     const d = JSON.parse(raw);
     state = d.state;
@@ -1383,9 +1384,6 @@ function initSampleData() {
 }
 
 load();
-if (!state.joined.length && !state.waitlist.length) {
-  initSampleData();
-}
 render();
 </script>
 </body>
