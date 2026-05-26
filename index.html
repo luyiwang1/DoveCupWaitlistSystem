@@ -812,6 +812,15 @@ function remotePayload() {
     updatedAt: Date.now()
   };
 }
+function defaultState() {
+  return { title: '🎉 活动接龙', capacity: null, joined: [], waitlist: [] };
+}
+function normalizeState(input) {
+  const next = Object.assign(defaultState(), input || {});
+  next.joined = Array.isArray(next.joined) ? next.joined : [];
+  next.waitlist = Array.isArray(next.waitlist) ? next.waitlist : [];
+  return next;
+}
 function escapeHtml(v) {
   return String(v).replace(/[&<>"']/g, ch => ({
     '&': '&amp;',
@@ -880,7 +889,7 @@ function load() {
     const raw = sessionStorage.getItem(DATA_STORAGE);
     if (!raw) return;
     const d = JSON.parse(raw);
-    state = d.state;
+    state = normalizeState(d.state);
     idSeq = d.idSeq || 100;
   } catch(e){}
 }
@@ -902,10 +911,10 @@ function initRealtimeDatabase() {
       applyingRemote = true;
       const data = snapshot.val();
       if (data && data.state) {
-        state = data.state;
+        state = normalizeState(data.state);
         idSeq = data.idSeq || 1;
       } else {
-        state = { title: '🎉 活动接龙', capacity: null, joined: [], waitlist: [] };
+        state = defaultState();
         idSeq = 1;
         remoteRef.set(remotePayload());
       }
