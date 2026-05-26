@@ -756,10 +756,22 @@ body.is-admin .capacity-edit.admin-only { display: flex !important; }
   </div>
 </div>
 
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-database-compat.js"></script>
 <script>
 const COLORS = ['#07C160','#10AEFF','#FF8C00','#FA5151','#9B59B6','#E67E22','#2ECC71','#E74C3C','#3498DB','#1ABC9C'];
 const ADMIN_PASSWORD = 'DoveCup2026!';
 const DATA_STORAGE = 'signup_v3';
+const DB_PATH = 'doveCupWaitlistSystem/main';
+const FIREBASE_CONFIG = {
+  apiKey: 'AIzaSyBPTwRAkfHjCA_RCQu5t2udzllF3Rz_CCo',
+  authDomain: 'dovecupdatabase.firebaseapp.com',
+  databaseURL: 'https://dovecupdatabase-default-rtdb.firebaseio.com/',
+  projectId: 'dovecupdatabase',
+  storageBucket: 'dovecupdatabase.firebasestorage.app',
+  messagingSenderId: '814970094950',
+  appId: '1:814970094950:web:c061c00eaceed40125b4a7'
+};
 const USER_KEY_STORAGE = 'signup_user_key';
 const USER_NAME_STORAGE = 'signup_user_name';
 const ADMIN_STORAGE = 'signup_is_admin';
@@ -772,6 +784,10 @@ let state = {
 };
 
 let idSeq = 1;
+let remoteRef = null;
+let remoteReady = false;
+let applyingRemote = false;
+let remoteSaveTimer = null;
 let currentUserKey = localStorage.getItem(USER_KEY_STORAGE);
 if (!currentUserKey) {
   currentUserKey = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
@@ -781,6 +797,21 @@ let currentUserName = localStorage.getItem(USER_NAME_STORAGE) || '';
 let isAdminMode = sessionStorage.getItem(ADMIN_STORAGE) === '1';
 
 function newId() { return idSeq++; }
+function hasFirebaseConfig() {
+  return Boolean(
+    FIREBASE_CONFIG.apiKey &&
+    FIREBASE_CONFIG.databaseURL &&
+    FIREBASE_CONFIG.projectId &&
+    FIREBASE_CONFIG.appId
+  );
+}
+function remotePayload() {
+  return {
+    state,
+    idSeq,
+    updatedAt: Date.now()
+  };
+}
 function escapeHtml(v) {
   return String(v).replace(/[&<>"']/g, ch => ({
     '&': '&amp;',
@@ -832,6 +863,16 @@ function initials(name) {
 }
 
 function save() {
+  if (applyingRemote) return;
+  if (remoteRef) {
+    clearTimeout(remoteSaveTimer);
+    remoteSaveTimer = setTimeout(() => {
+      remoteRef.set(remotePayload()).catch(() => {
+        showToast('云端保存失败，请检查网络');
+      });
+    }, 80);
+    return;
+  }
   try { sessionStorage.setItem(DATA_STORAGE, JSON.stringify({state, idSeq})); } catch(e){}
 }
 function load() {
@@ -842,6 +883,41 @@ function load() {
     state = d.state;
     idSeq = d.idSeq || 100;
   } catch(e){}
+}
+
+function initRealtimeDatabase() {
+  if (!hasFirebaseConfig()) {
+    showToast('需要配置 Firebase 才能多人实时共享');
+    return;
+  }
+  if (!window.firebase || !firebase.database) {
+    showToast('Firebase SDK 加载失败，请刷新页面');
+    return;
+  }
+
+  try {
+    if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+    remoteRef = firebase.database().ref(DB_PATH);
+    remoteRef.on('value', snapshot => {
+      applyingRemote = true;
+      const data = snapshot.val();
+      if (data && data.state) {
+        state = data.state;
+        idSeq = data.idSeq || 1;
+      } else {
+        state = { title: '🎉 活动接龙', capacity: null, joined: [], waitlist: [] };
+        idSeq = 1;
+        remoteRef.set(remotePayload());
+      }
+      remoteReady = true;
+      render();
+      applyingRemote = false;
+    }, () => {
+      showToast('无法连接实时数据库');
+    });
+  } catch(e) {
+    showToast('Firebase 配置无效');
+  }
 }
 
 // ── Render ──
@@ -1385,6 +1461,7 @@ function initSampleData() {
 
 load();
 render();
+initRealtimeDatabase();
 </script>
 </body>
 </html>
