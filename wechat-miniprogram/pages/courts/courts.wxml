@@ -41,7 +41,7 @@
           <text wx:else class="pill">{{match.scoreA || '-'}}</text>
         </view>
         <view class="chip-row">
-          <text wx:for="{{match.teamA}}" wx:for-item="player" wx:key="key" class="player-chip">{{player.name}}</text>
+          <text wx:for="{{match.teamA}}" wx:for-item="player" wx:key="key" class="player-chip {{player.key == match.captainKey ? 'captain' : ''}}">{{player.name}}{{player.key == match.captainKey ? ' · 队长' : ''}}</text>
           <text wx:if="{{!match.teamA.length}}" class="player-chip">空位</text>
         </view>
       </view>
@@ -52,7 +52,7 @@
           <text wx:else class="pill">{{match.scoreB || '-'}}</text>
         </view>
         <view class="chip-row">
-          <text wx:for="{{match.teamB}}" wx:for-item="player" wx:key="key" class="player-chip">{{player.name}}</text>
+          <text wx:for="{{match.teamB}}" wx:for-item="player" wx:key="key" class="player-chip {{player.key == match.captainKey ? 'captain' : ''}}">{{player.name}}{{player.key == match.captainKey ? ' · 队长' : ''}}</text>
           <text wx:if="{{!match.teamB.length}}" class="player-chip">空位</text>
         </view>
       </view>

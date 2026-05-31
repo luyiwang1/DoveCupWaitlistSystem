@@ -125,12 +125,18 @@ Page({
       courtName: `Court ${courtIndex + 1}`,
       teamA,
       teamB,
+      captainKey: this.pickCaptain(teamA, teamB, roundIndex, courtIndex),
       scoreA: score.a === undefined ? '' : score.a,
       scoreB: score.b === undefined ? '' : score.b,
       aWin,
       bWin,
       moveText: `胜→Court ${Math.max(1, courtIndex)} / 负→Court ${Math.min(this.data.courtCount, courtIndex + 2)}`
     };
+  },
+
+  pickCaptain(teamA, teamB, roundIndex, courtIndex) {
+    const all = teamA.concat(teamB);
+    return all.length ? all[(roundIndex + courtIndex) % all.length].key : null;
   },
 
   addSplitPair(bucket, team) {
@@ -159,6 +165,7 @@ Page({
         const match = this.makeMatch([], idx, r + 1);
         match.teamA = bucket.a;
         match.teamB = bucket.b;
+        match.captainKey = this.pickCaptain(match.teamA, match.teamB, r + 1, idx);
         return match;
       });
     }

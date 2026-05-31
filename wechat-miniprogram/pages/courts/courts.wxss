@@ -31,6 +31,12 @@
   font-weight: 800;
 }
 
+.player-chip.captain {
+  background: #FFF3E0;
+  color: #FF8C00;
+  border: 1rpx solid #FF8C00;
+}
+
 .score-input {
   width: 110rpx;
   background: #fff;
