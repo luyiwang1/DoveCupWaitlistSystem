@@ -71,8 +71,17 @@ Page({
     const clean = name.trim();
     if (!clean) return null;
     const key = this.keyForName(clean);
-    if (!scores.players[key]) scores.players[key] = { key, name: clean, appearances: 0, wins: 0, points: 0 };
+    if (!scores.players[key]) {
+      scores.players[key] = { key, name: clean, appearances: 0, manualWins: 0, courtWins: 0, wins: 0, points: 0 };
+    }
     return scores.players[key];
+  },
+
+  recalc(player) {
+    player.manualWins = Number(player.manualWins || 0);
+    player.courtWins = Number(player.courtWins || 0);
+    player.wins = player.manualWins + player.courtWins;
+    player.points = Number(player.appearances || 0) * 50 + player.wins * 10;
   },
 
   saveScores(scores) {
@@ -89,7 +98,7 @@ Page({
       const player = this.ensurePlayer(scores, p.name);
       if (!player) return;
       player.appearances += 1;
-      player.points += 50;
+      this.recalc(player);
       player.lastPlayedAt = Date.now();
     });
     scores.events.unshift({ type: 'participation', count: joined.length, ts: Date.now() });
@@ -103,7 +112,7 @@ Page({
     const player = this.ensurePlayer(scores, this.data.nameInput);
     if (!player) return wx.showToast({ title: '请输入姓名', icon: 'none' });
     player.appearances += 1;
-    player.points += 50;
+    this.recalc(player);
     player.lastPlayedAt = Date.now();
     scores.events.unshift({ type: 'manualParticipation', name: player.name, ts: Date.now() });
     scores.events = scores.events.slice(0, 20);
@@ -117,10 +126,42 @@ Page({
     const scores = JSON.parse(JSON.stringify(this.data.scores));
     const player = this.ensurePlayer(scores, this.data.nameInput);
     if (!player) return wx.showToast({ title: '请输入姓名', icon: 'none' });
-    player.wins += wins;
-    player.points += wins * 10;
+    player.manualWins = Number(player.manualWins || 0) + wins;
+    this.recalc(player);
     scores.events.unshift({ type: 'wins', name: player.name, wins, ts: Date.now() });
     scores.events = scores.events.slice(0, 20);
     this.saveScores(scores);
+  },
+
+  resetPlayer() {
+    if (!this.data.isAdmin) return;
+    const name = this.data.nameInput.trim();
+    if (!name) return wx.showToast({ title: '请输入姓名', icon: 'none' });
+    const scores = JSON.parse(JSON.stringify(this.data.scores));
+    const key = this.keyForName(name);
+    if (!scores.players[key]) return wx.showToast({ title: '找不到此人', icon: 'none' });
+    wx.showModal({
+      title: '重置此人积分',
+      content: `确定重置 ${scores.players[key].name} 吗？`,
+      success: (res) => {
+        if (!res.confirm) return;
+        delete scores.players[key];
+        scores.events.unshift({ type: 'resetPlayer', name, ts: Date.now() });
+        scores.events = scores.events.slice(0, 20);
+        this.saveScores(scores);
+      }
+    });
+  },
+
+  resetAllScores() {
+    if (!this.data.isAdmin) return;
+    wx.showModal({
+      title: '重置全部积分',
+      content: '确定清空所有积分记录吗？',
+      success: (res) => {
+        if (!res.confirm) return;
+        this.saveScores({ players: {}, events: [{ type: 'resetAll', ts: Date.now() }] });
+      }
+    });
   }
 });

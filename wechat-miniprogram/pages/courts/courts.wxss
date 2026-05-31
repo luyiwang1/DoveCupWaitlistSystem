@@ -1,34 +1,42 @@
-.player-row {
-  display: flex;
-  align-items: center;
-  gap: 16rpx;
-  padding: 18rpx 0;
-  border-bottom: 1rpx solid #EFEFEF;
+.team {
+  margin-top: 18rpx;
+  padding: 18rpx;
+  border-radius: 18rpx;
+  background: #F7F7F7;
 }
 
-.rank {
-  width: 44rpx;
-  height: 44rpx;
-  line-height: 44rpx;
-  text-align: center;
-  border-radius: 50%;
-  background: #EFEFEF;
-  color: #555;
-  font-size: 22rpx;
+.team.winner {
+  background: #E8F9EF;
+}
+
+.team-label {
+  font-size: 24rpx;
   font-weight: 900;
+  color: #555;
 }
 
-.player-name {
-  flex: 1;
-  font-size: 28rpx;
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10rpx;
+  margin-top: 12rpx;
+}
+
+.player-chip {
+  border-radius: 999rpx;
+  background: #fff;
+  padding: 8rpx 14rpx;
+  color: #555;
+  font-size: 24rpx;
   font-weight: 800;
 }
 
-.captain {
-  border-radius: 999rpx;
-  background: #FFF3E0;
-  color: #FF8C00;
-  padding: 6rpx 14rpx;
-  font-size: 22rpx;
+.score-input {
+  width: 110rpx;
+  background: #fff;
+  border-radius: 14rpx;
+  padding: 10rpx;
+  text-align: center;
+  font-size: 30rpx;
   font-weight: 900;
 }

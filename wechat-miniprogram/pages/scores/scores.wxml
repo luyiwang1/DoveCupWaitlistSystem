@@ -18,7 +18,11 @@
     </view>
     <view class="row" style="margin-top:16rpx">
       <button class="btn secondary" bindtap="addParticipation">单人参赛 +50</button>
-      <button class="btn secondary" bindtap="addWins">加赢局分</button>
+      <button class="btn secondary" bindtap="addWins">手动加赢局</button>
+    </view>
+    <view class="row" style="margin-top:16rpx">
+      <button class="btn danger" bindtap="resetPlayer">重置此人</button>
+      <button class="btn danger" bindtap="resetAllScores">重置全部</button>
     </view>
   </view>
 
@@ -37,6 +41,10 @@
         <view class="row" style="margin-top:12rpx">
           <text class="pill">参赛 {{item.appearances || 0}} 次</text>
           <text class="pill">赢 {{item.wins || 0}} game</text>
+        </view>
+        <view class="row" style="margin-top:8rpx">
+          <text class="pill">场地 {{item.courtWins || 0}}</text>
+          <text class="pill">手动 {{item.manualWins || 0}}</text>
         </view>
       </view>
       <view class="score">{{item.points || 0}}</view>
