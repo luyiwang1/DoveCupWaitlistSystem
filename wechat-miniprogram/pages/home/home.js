@@ -2,7 +2,7 @@ const db = require('../../utils/db');
 
 Page({
   data: {
-    state: { title: '🎉 活动接龙', capacity: null, joined: [], waitlist: [] },
+    state: { title: '金鸽巡回赛', capacity: null, joined: [], waitlist: [] },
     idSeq: 1,
     nameInput: '',
     capacityInput: '',

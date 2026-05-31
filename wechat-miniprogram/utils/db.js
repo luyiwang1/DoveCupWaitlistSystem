@@ -19,7 +19,7 @@ function request(method, path, data) {
 function defaultMain() {
   return {
     idSeq: 1,
-    state: { title: '🎉 活动接龙', capacity: null, joined: [], waitlist: [] },
+    state: { title: '金鸽巡回赛', capacity: null, joined: [], waitlist: [] },
     updatedAt: Date.now()
   };
 }
@@ -27,7 +27,7 @@ function defaultMain() {
 function normalizeMain(data) {
   const main = data || defaultMain();
   main.state = main.state || {};
-  main.state.title = main.state.title || '🎉 活动接龙';
+  main.state.title = main.state.title || '金鸽巡回赛';
   main.state.joined = Array.isArray(main.state.joined) ? main.state.joined : [];
   main.state.waitlist = Array.isArray(main.state.waitlist) ? main.state.waitlist : [];
   main.idSeq = Number(main.idSeq) || 1;

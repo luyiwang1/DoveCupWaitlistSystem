@@ -5,7 +5,7 @@
     "pages/scores/scores"
   ],
   "window": {
-    "navigationBarTitleText": "Dove Cup",
+    "navigationBarTitleText": "金鸽巡回赛",
     "navigationBarBackgroundColor": "#07C160",
     "navigationBarTextStyle": "white",
     "backgroundColor": "#F7F7F7"

@@ -1,7 +1,7 @@
 {
-  "description": "Dove Cup waitlist, courts, and scores mini program",
+  "description": "金鸽巡回赛报名、场地赛程和积分榜小程序",
   "appid": "touristappid",
-  "projectname": "DoveCupWaitlistSystem",
+  "projectname": "金鸽巡回赛",
   "miniprogramRoot": "./",
   "compileType": "miniprogram",
   "setting": {
