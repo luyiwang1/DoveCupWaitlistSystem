@@ -28,8 +28,8 @@
       <button class="btn secondary admin-control" onclick="saveAll()">💾 保存赛程和比分</button>
       <button class="btn secondary admin-control" onclick="syncScores(false)">🏆 手动同步积分榜</button>
       <button class="btn secondary" onclick="copyCourtText()">📋 复制三轮表格</button>
-      <button class="btn secondary" onclick="location.href='index.html'">报名页</button>
-      <button class="btn secondary" onclick="location.href='scores.html'">🏆 积分榜</button>
+      <button class="btn secondary" onclick="goPage('index.html')">报名页</button>
+      <button class="btn secondary" onclick="goPage('scores.html')">🏆 积分榜</button>
       <button class="btn dark admin-control" onclick="toggleManualBox()">✍️ 手动输入名单</button>
     </div>
   </section>
@@ -73,11 +73,14 @@
 <script>
 const ADMIN_PASSWORD='8888';
 const ADMIN_STORAGE='courts_is_admin';
+const SITE_VERSION='25';
 const DB_PATH='doveCupWaitlistSystem/main';
 const COURTS_DB_PATH='doveCupWaitlistSystem/courtsPage';
 const SCORE_DB_PATH='doveCupWaitlistSystem/scores';
 const FIREBASE_CONFIG={apiKey:'AIzaSyBPTwRAkfHjCA_RCQu5t2udzllF3Rz_CCo',authDomain:'dovecupdatabase.firebaseapp.com',databaseURL:'https://dovecupdatabase-default-rtdb.firebaseio.com/',projectId:'dovecupdatabase',storageBucket:'dovecupdatabase.firebasestorage.app',messagingSenderId:'814970094950',appId:'1:814970094950:web:c061c00eaceed40125b4a7'};
 let courtCount=5,players=[],baseCourts=[],rounds=[],roundScores={},savedLayout=null,remoteCourtsRef=null,scoreRef=null,scoreData={players:{},events:[]},usingManual=false,isAdminMode=sessionStorage.getItem(ADMIN_STORAGE)==='1',scoreSyncTimer=null;
+function goPage(page){location.href=`${page}?v=${SITE_VERSION}`}
+if(new URLSearchParams(location.search).get('v')!==SITE_VERSION){history.replaceState(null,'',`${location.pathname}?v=${SITE_VERSION}`)}
 function renderAdmin(){document.body.classList.toggle('is-admin',isAdminMode);const btn=document.getElementById('adminBtn');if(btn)btn.textContent=isAdminMode?'Admin 已登录':'Admin';if(!isAdminMode)document.getElementById('manualBox').style.display='none'}
 function toggleAdmin(){if(isAdminMode){isAdminMode=false;sessionStorage.removeItem(ADMIN_STORAGE);renderAdmin();render();return}const pass=prompt('请输入管理员密码');if(pass===ADMIN_PASSWORD){isAdminMode=true;sessionStorage.setItem(ADMIN_STORAGE,'1');renderAdmin();render()}else if(pass!==null){alert('密码错误')}}
 function requireAdmin(){if(isAdminMode)return true;alert('只有管理员可以修改赛程');return false}

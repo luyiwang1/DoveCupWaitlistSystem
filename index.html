@@ -630,8 +630,8 @@ body.is-admin .capacity-edit.admin-only { display: flex !important; }
   <div class="header-top">
     <div class="event-title" id="eventTitle">🎉 活动接龙</div>
     <button class="edit-title-btn admin-only" onclick="editTitle()">✏️ 改名</button>
-    <button class="admin-btn" onclick="location.href='courts.html'">场地</button>
-    <button class="admin-btn" onclick="location.href='scores.html'">积分</button>
+    <button class="admin-btn" onclick="goPage('courts.html')">场地</button>
+    <button class="admin-btn" onclick="goPage('scores.html')">积分</button>
     <button class="admin-btn" id="adminBtn" onclick="toggleAdmin()">Admin</button>
   </div>
   <div class="stats-row">
@@ -763,6 +763,7 @@ body.is-admin .capacity-edit.admin-only { display: flex !important; }
 <script>
 const COLORS = ['#07C160','#10AEFF','#FF8C00','#FA5151','#9B59B6','#E67E22','#2ECC71','#E74C3C','#3498DB','#1ABC9C'];
 const ADMIN_PASSWORD = '8888';
+const SITE_VERSION = '25';
 const WAITLIST_CAPACITY = 24;
 const DATA_STORAGE = 'signup_v3';
 const DB_PATH = 'doveCupWaitlistSystem/main';
@@ -799,6 +800,12 @@ if (!currentUserKey) {
 let currentUserName = localStorage.getItem(USER_NAME_STORAGE) || '';
 let isAdminMode = sessionStorage.getItem(ADMIN_STORAGE) === '1';
 
+function goPage(page) {
+  location.href = `${page}?v=${SITE_VERSION}`;
+}
+if (new URLSearchParams(location.search).get('v') !== SITE_VERSION) {
+  history.replaceState(null, '', `${location.pathname}?v=${SITE_VERSION}`);
+}
 function newId() { return idSeq++; }
 function hasFirebaseConfig() {
   return Boolean(

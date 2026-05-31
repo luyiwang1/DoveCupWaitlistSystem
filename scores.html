@@ -23,8 +23,8 @@
     </div>
     <div class="actions">
       <button class="btn" id="adminBtn" onclick="toggleAdmin()">Admin</button>
-      <button class="btn secondary" onclick="location.href='index.html'">报名页</button>
-      <button class="btn secondary" onclick="location.href='courts.html'">场地分组</button>
+      <button class="btn secondary" onclick="goPage('index.html')">报名页</button>
+      <button class="btn secondary" onclick="goPage('courts.html')">场地分组</button>
     </div>
   </section>
   <section class="stats">
@@ -61,10 +61,13 @@
 <script>
 const ADMIN_PASSWORD='8888';
 const ADMIN_STORAGE='scores_is_admin';
+const SITE_VERSION='25';
 const SIGNUP_DB_PATH='doveCupWaitlistSystem/main';
 const SCORE_DB_PATH='doveCupWaitlistSystem/scores';
 const FIREBASE_CONFIG={apiKey:'AIzaSyBPTwRAkfHjCA_RCQu5t2udzllF3Rz_CCo',authDomain:'dovecupdatabase.firebaseapp.com',databaseURL:'https://dovecupdatabase-default-rtdb.firebaseio.com/',projectId:'dovecupdatabase',storageBucket:'dovecupdatabase.firebasestorage.app',messagingSenderId:'814970094950',appId:'1:814970094950:web:c061c00eaceed40125b4a7'};
 let scoreRef=null,signupRef=null,scoreData={players:{},events:[]},signupState={joined:[]},isAdminMode=sessionStorage.getItem(ADMIN_STORAGE)==='1';
+function goPage(page){location.href=`${page}?v=${SITE_VERSION}`}
+if(new URLSearchParams(location.search).get('v')!==SITE_VERSION){history.replaceState(null,'',`${location.pathname}?v=${SITE_VERSION}`)}
 function keyForName(name){return name.trim().toLowerCase().replace(/[.#$/[\]]/g,'_')}
 function normalizeScoreData(data){const next=data||{};next.players=next.players&&typeof next.players==='object'?next.players:{};next.events=Array.isArray(next.events)?next.events:[];return next}
 function playerList(){return Object.values(scoreData.players).sort((a,b)=>(b.points||0)-(a.points||0)||(b.wins||0)-(a.wins||0)||String(a.name).localeCompare(String(b.name),'zh-Hans-CN'))}
