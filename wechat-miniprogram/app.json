@@ -1,0 +1,33 @@
+{
+  "pages": [
+    "pages/home/home",
+    "pages/courts/courts",
+    "pages/scores/scores"
+  ],
+  "window": {
+    "navigationBarTitleText": "Dove Cup",
+    "navigationBarBackgroundColor": "#07C160",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#F7F7F7"
+  },
+  "tabBar": {
+    "color": "#777777",
+    "selectedColor": "#07C160",
+    "backgroundColor": "#FFFFFF",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/home/home",
+        "text": "报名"
+      },
+      {
+        "pagePath": "pages/courts/courts",
+        "text": "场地"
+      },
+      {
+        "pagePath": "pages/scores/scores",
+        "text": "积分"
+      }
+    ]
+  }
+}

@@ -1,0 +1,45 @@
+<view class="page">
+  <view class="hero">
+    <view class="row-between">
+      <view>
+        <view class="hero-title">🏆 积分榜</view>
+        <view class="hero-subtitle">参赛 +50 · 每赢 1 game +10</view>
+      </view>
+      <button class="btn secondary" size="mini" bindtap="toggleAdmin">{{isAdmin ? 'Admin 已登录' : 'Admin'}}</button>
+    </view>
+  </view>
+
+  <view wx:if="{{isAdmin}}" class="card">
+    <view class="section-title" style="margin-top:0">管理员更新</view>
+    <button class="btn" style="width:100%" bindtap="importCurrentJoined">本场报名名单全部参赛 +50</button>
+    <view class="row" style="margin-top:16rpx">
+      <input class="input" style="flex:1" placeholder="姓名" value="{{nameInput}}" bindinput="onNameInput" />
+      <input class="input" style="width:150rpx" type="number" value="{{winsInput}}" bindinput="onWinsInput" />
+    </view>
+    <view class="row" style="margin-top:16rpx">
+      <button class="btn secondary" bindtap="addParticipation">单人参赛 +50</button>
+      <button class="btn secondary" bindtap="addWins">加赢局分</button>
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="row-between">
+      <text class="pill">参赛人员 {{players.length}}</text>
+      <text class="pill">最高分 {{topScore}}</text>
+    </view>
+  </view>
+
+  <view wx:if="{{!players.length}}" class="card empty">还没有积分记录</view>
+  <view wx:for="{{players}}" wx:key="key" class="card">
+    <view class="row-between">
+      <view>
+        <view style="font-size:32rpx;font-weight:900">#{{index + 1}} {{item.name}}</view>
+        <view class="row" style="margin-top:12rpx">
+          <text class="pill">参赛 {{item.appearances || 0}} 次</text>
+          <text class="pill">赢 {{item.wins || 0}} game</text>
+        </view>
+      </view>
+      <view class="score">{{item.points || 0}}</view>
+    </view>
+  </view>
+</view>

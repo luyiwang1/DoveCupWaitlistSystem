@@ -1,0 +1,58 @@
+<view class="page">
+  <view class="hero">
+    <view class="row-between">
+      <view>
+        <view class="hero-title">{{state.title}}</view>
+        <view class="hero-subtitle">报名 {{state.joined.length}} · Waitlist {{state.waitlist.length}} · 名额 {{state.capacity || '不限'}}</view>
+      </view>
+      <button class="btn secondary" size="mini" bindtap="toggleAdmin">{{isAdmin ? 'Admin 已登录' : 'Admin'}}</button>
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="row">
+      <input class="input" style="flex:1" placeholder="姓名 / 微信名" value="{{nameInput}}" bindinput="onNameInput" />
+      <button class="btn" bindtap="addJoined">报名</button>
+    </view>
+    <button class="btn secondary" style="margin-top:16rpx;width:100%" bindtap="addWaitlist">加入 Waitlist</button>
+  </view>
+
+  <view wx:if="{{isAdmin}}" class="card">
+    <view class="section-title" style="margin-top:0">管理员设置</view>
+    <view class="row">
+      <input class="input" style="flex:1" type="number" placeholder="总名额" value="{{capacityInput}}" bindinput="onCapacityInput" />
+      <button class="btn" bindtap="saveCapacity">保存</button>
+    </view>
+  </view>
+
+  <view class="section-title">报名名单</view>
+  <view wx:if="{{!state.joined.length}}" class="card empty">还没有人报名</view>
+  <view wx:for="{{state.joined}}" wx:key="id" class="card">
+    <view class="row-between">
+      <view>
+        <view style="font-size:30rpx;font-weight:900">{{index + 1}}. {{item.name}}</view>
+        <view class="row" style="margin-top:12rpx">
+          <text class="pill">{{item.confirmed ? '已确认' : '待确认'}}</text>
+          <text class="pill">{{item.paid ? '已付款' : '未付款'}}</text>
+        </view>
+      </view>
+      <view class="row" wx:if="{{isAdmin || item.ownerKey === userKey}}">
+        <button class="btn secondary" size="mini" data-id="{{item.id}}" bindtap="toggleConfirm">确认</button>
+        <button class="btn secondary" size="mini" data-id="{{item.id}}" bindtap="togglePaid">付款</button>
+        <button class="btn danger" size="mini" data-id="{{item.id}}" bindtap="removeJoined">退出</button>
+      </view>
+    </view>
+  </view>
+
+  <view class="section-title">Waitlist</view>
+  <view wx:if="{{!state.waitlist.length}}" class="card empty">Waitlist 暂时为空</view>
+  <view wx:for="{{state.waitlist}}" wx:key="id" class="card">
+    <view class="row-between">
+      <view style="font-size:30rpx;font-weight:900">{{index + 1}}. {{item.name}}</view>
+      <view class="row">
+        <button wx:if="{{isAdmin}}" class="btn secondary" size="mini" data-id="{{item.id}}" bindtap="promoteOne">补位</button>
+        <button wx:if="{{isAdmin || item.ownerKey === userKey}}" class="btn danger" size="mini" data-id="{{item.id}}" bindtap="removeWaitlist">退出</button>
+      </view>
+    </view>
+  </view>
+</view>

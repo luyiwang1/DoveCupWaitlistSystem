@@ -1,0 +1,14 @@
+{
+  "description": "Dove Cup waitlist, courts, and scores mini program",
+  "appid": "touristappid",
+  "projectname": "DoveCupWaitlistSystem",
+  "miniprogramRoot": "./",
+  "compileType": "miniprogram",
+  "setting": {
+    "urlCheck": false,
+    "es6": true,
+    "enhance": true,
+    "postcss": true,
+    "minified": true
+  }
+}
