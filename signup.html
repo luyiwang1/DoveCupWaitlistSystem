@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>Dove Cup 最新报名页</title>
+<style>
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#f7f7f7}
+#loading{position:fixed;inset:0;display:grid;place-items:center;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#555;font-weight:700}
+iframe{position:fixed;inset:0;width:100%;height:100%;border:0;background:#fff}
+</style>
+</head>
+<body>
+<div id="loading">正在打开最新报名页...</div>
+<script>
+const frame=document.createElement('iframe');
+frame.title='Dove Cup 最新报名页';
+frame.src=`./index.html?latest=${Date.now()}`;
+frame.onload=()=>{const loading=document.getElementById('loading');if(loading)loading.remove()};
+document.body.appendChild(frame);
+</script>
+</body>
+</html>
