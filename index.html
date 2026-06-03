@@ -239,6 +239,26 @@ body.is-admin .capacity-edit.admin-only { display: flex !important; }
   text-transform: uppercase;
   margin: 14px 0 8px 2px;
 }
+.level-section {
+  margin-bottom: 14px;
+}
+.level-section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--green-dark);
+  background: var(--green-light);
+  border-radius: 999px;
+  padding: 7px 12px;
+  margin: 12px 0 8px;
+}
+.level-section-title span {
+  color: var(--gray-700);
+  font-size: 12px;
+  font-weight: 700;
+}
 .person-card {
   background: var(--white);
   border-radius: var(--radius);
@@ -737,6 +757,10 @@ body.is-admin .capacity-edit.admin-only { display: flex !important; }
     <div class="modal-handle"></div>
     <div class="modal-title">➕ 添加人员</div>
     <input class="modal-input" id="addName" placeholder="姓名 / 微信名" autocomplete="off">
+    <select class="modal-input" id="addLevel">
+      <option value="under3">3.0以下</option>
+      <option value="over3">3.0以上</option>
+    </select>
     <div class="modal-btns">
       <button class="modal-btn cancel" onclick="closeModalById('addModal')">取消</button>
       <button class="modal-btn confirm" style="background:var(--orange);color:white" onclick="addPerson('waitlist')">加 Waitlist</button>
@@ -763,8 +787,12 @@ body.is-admin .capacity-edit.admin-only { display: flex !important; }
 <script>
 const COLORS = ['#07C160','#10AEFF','#FF8C00','#FA5151','#9B59B6','#E67E22','#2ECC71','#E74C3C','#3498DB','#1ABC9C'];
 const ADMIN_PASSWORD = '8888';
-const SITE_VERSION = '27';
+const SITE_VERSION = '28';
 const WAITLIST_CAPACITY = 24;
+const LEVEL_GROUPS = [
+  { key: 'under3', label: '3.0以下' },
+  { key: 'over3', label: '3.0以上' }
+];
 const DATA_STORAGE = 'signup_v3';
 const DB_PATH = 'doveCupWaitlistSystem/main';
 const FIREBASE_CONFIG = {
@@ -830,6 +858,19 @@ function normalizeState(input) {
   next.joined = Array.isArray(next.joined) ? next.joined : [];
   next.waitlist = Array.isArray(next.waitlist) ? next.waitlist : [];
   return next;
+}
+function levelKeyOf(p) {
+  return p && p.levelGroup === 'over3' ? 'over3' : 'under3';
+}
+function levelLabelOf(p) {
+  const key = levelKeyOf(p);
+  return (LEVEL_GROUPS.find(g => g.key === key) || LEVEL_GROUPS[0]).label;
+}
+function groupedByLevel(list) {
+  return LEVEL_GROUPS.map(group => ({
+    ...group,
+    people: list.filter(p => levelKeyOf(p) === group.key)
+  }));
 }
 function escapeHtml(v) {
   return String(v).replace(/[&<>"']/g, ch => ({
@@ -982,7 +1023,17 @@ function renderJoined() {
     el.innerHTML = `<div class="waitlist-empty"><div class="icon">📋</div><p>还没有人报名<br>点击右下角 + 添加</p></div>`;
     return;
   }
-  el.innerHTML = state.joined.map((p, i) => personCard(p, i+1, 'joined')).join('');
+  let rank = 1;
+  el.innerHTML = groupedByLevel(state.joined).map(group => {
+    const cards = group.people.length
+      ? group.people.map(p => personCard(p, rank++, 'joined')).join('')
+      : `<div class="waitlist-empty"><p>暂无报名</p></div>`;
+    return `
+      <section class="level-section">
+        <div class="level-section-title">${group.label}<span>${group.people.length} 人</span></div>
+        ${cards}
+      </section>`;
+  }).join('');
 }
 
 function renderWaitlist() {
@@ -1061,6 +1112,7 @@ function personCard(p, rank, list) {
 // ── Actions ──
 function addPerson(list) {
   const name = document.getElementById('addName').value.trim();
+  const levelGroup = document.getElementById('addLevel').value === 'over3' ? 'over3' : 'under3';
   if (!name) { showToast('请输入姓名'); return; }
 
   if (list === 'joined') {
@@ -1191,15 +1243,22 @@ function copyList() {
   const cap = state.capacity ? `（名额 ${state.joined.length}/${state.capacity}）` : `（共 ${state.joined.length} 人）`;
   let text = `${title} ${cap}\n\n`;
   text += `📋 报名名单：\n`;
-  state.joined.forEach((p, i) => {
-    const confirm = p.confirmed ? '✅' : '❓';
-    const paid = p.paid ? '💰' : '  ';
-    text += `${i+1}. ${p.name} ${confirm}${paid}\n`;
+  groupedByLevel(state.joined).forEach(group => {
+    text += `\n【${group.label}】${group.people.length} 人\n`;
+    group.people.forEach((p, i) => {
+      const confirm = p.confirmed ? '✅' : '❓';
+      const paid = p.paid ? '💰' : '  ';
+      text += `${i+1}. ${p.name} ${confirm}${paid}\n`;
+    });
   });
   if (state.waitlist.length) {
     text += `\n⏳ Waitlist：\n`;
-    state.waitlist.forEach((p, i) => {
-      text += `${i+1}. ${p.name}\n`;
+    groupedByLevel(state.waitlist).forEach(group => {
+      if (!group.people.length) return;
+      text += `\n【${group.label}】${group.people.length} 人\n`;
+      group.people.forEach((p, i) => {
+        text += `${i+1}. ${p.name}\n`;
+      });
     });
   }
   text += `\n✅=已确认  💰=已付款`;
@@ -1304,7 +1363,7 @@ function personCard(p, rank, list) {
     <div class="person-info">
       <div class="person-name">${safeName}</div>
       ${ownerNote}
-      ${isJoined ? '' : `<div class="person-meta">排队中</div>`}
+      <div class="person-meta">${isJoined ? levelLabelOf(p) : `${levelLabelOf(p)} · 排队中`}</div>
     </div>
     ${badges}
   </div>`;
@@ -1329,17 +1388,18 @@ function addPerson(list) {
   }
 
   rememberUser(name);
-  const person = { id: newId(), name, ownerKey: currentUserKey, confirmed: false, paid: false, ts: Date.now() };
+  const person = { id: newId(), name, levelGroup, ownerKey: currentUserKey, confirmed: false, paid: false, ts: Date.now() };
   if (list === 'joined') {
     state.joined.push(person);
     showToast(`${name} 已报名`, 'green');
   } else {
-    state.waitlist.push({ id: person.id, name, ownerKey: currentUserKey, ts: person.ts });
+    state.waitlist.push({ id: person.id, name, levelGroup, ownerKey: currentUserKey, ts: person.ts });
     showToast(`${name} 已加入 Waitlist`);
   }
 
   closeModalById('addModal');
   document.getElementById('addName').value = '';
+  document.getElementById('addLevel').value = 'under3';
   render();
   switchTab(list === 'joined' ? 'joined' : 'waitlist');
 }
@@ -1389,7 +1449,7 @@ function promoteOne(id) {
   if (idx === -1) return;
   const w = state.waitlist[idx];
   state.waitlist.splice(idx, 1);
-  state.joined.push({ id: w.id, name: w.name, ownerKey: w.ownerKey, confirmed: false, paid: false, ts: Date.now() });
+  state.joined.push({ id: w.id, name: w.name, levelGroup: levelKeyOf(w), ownerKey: w.ownerKey, confirmed: false, paid: false, ts: Date.now() });
   showToast(`${w.name} 已补位成功`, 'green');
   render();
   switchTab('joined');
@@ -1402,7 +1462,7 @@ function promoteAll() {
   if (slots <= 0) { showToast('名额已满'); return; }
   const toPromote = state.waitlist.splice(0, slots);
   toPromote.forEach(w => {
-    state.joined.push({ id: w.id, name: w.name, ownerKey: w.ownerKey, confirmed: false, paid: false, ts: Date.now() });
+    state.joined.push({ id: w.id, name: w.name, levelGroup: levelKeyOf(w), ownerKey: w.ownerKey, confirmed: false, paid: false, ts: Date.now() });
   });
   showToast(`${toPromote.length} 人已成功补位`, 'green');
   render();
@@ -1413,7 +1473,7 @@ function autoPromote() {
   if (!state.capacity || state.waitlist.length === 0) return;
   if (state.joined.length < state.capacity) {
     const w = state.waitlist.shift();
-    state.joined.push({ id: w.id, name: w.name, ownerKey: w.ownerKey, confirmed: false, paid: false, ts: Date.now() });
+    state.joined.push({ id: w.id, name: w.name, levelGroup: levelKeyOf(w), ownerKey: w.ownerKey, confirmed: false, paid: false, ts: Date.now() });
     showToast(`${w.name} 自动补位成功`, 'green');
   }
 }
@@ -1435,6 +1495,7 @@ function setCapacity() {
     state.waitlist = overflow.map(p => ({
       id: p.id,
       name: p.name,
+      levelGroup: levelKeyOf(p),
       ownerKey: p.ownerKey,
       ts: Date.now()
     })).concat(state.waitlist);
